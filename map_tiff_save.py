@@ -5,6 +5,7 @@ import folium
 import rasterio
 import numpy as np
 from matplotlib import cm
+import tempfile
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
 #st.text(cm.get_cmap('viridis'))
@@ -43,11 +44,13 @@ uploaded_files = st.sidebar.file_uploader("Please choose a file", type=['tif','t
 #@st.cache_data
 #def main_func():   
 for file in uploaded_files:
-    with open(os.path.join("temp",file.name),"wb") as f: 
-      f.write(file.getbuffer())         
+    #with open(os.path.join("temp",file.name),"wb") as f: 
+      #f.write(file.getbuffer())         
     #st.success("Saved File")
+    tempfile1 = tempfile.NamedTemporaryFile(delete=False,suffix='.tif')
+    tempfile1.write(file.getbuffer())
 
-    src = rasterio.open('temp/'+file.name)
+    src = rasterio.open(tempfile1.name)
     array = src.read()
     bounds = src.bounds
     #st.sidebar.text(file.read())
@@ -56,7 +59,7 @@ for file in uploaded_files:
     bbox = [(bounds.bottom, bounds.left), (bounds.top, bounds.right)]
 
     img = folium.raster_layers.ImageOverlay(
-    name=file.name,
+    name=tempfile1.name,
     image=np.moveaxis(array, 0, -1),
     bounds=bbox,
     opacity=0.9,
